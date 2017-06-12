@@ -4,9 +4,8 @@
     function getCityLocation($city) {
         $headers = array('Accept' => 'application/json');
         $resource = '/api/weather/v3/location/search?query='. $_POST['city'] . '&locationType=city&language=en-US';
-        $result = getData($resource);
-        
-        $decodedJson = json_decode($result, true);
+        $decodedJson = json_decode(makeGetRequest($resource), true);
+
         $latitude = $decodedJson['location']['latitude'][0];
         $longitude = $decodedJson['location']['longitude'][0];
         
@@ -17,40 +16,87 @@
         $longitude = $location[0];
         $latitude = $location[1];
 
-        $result = array();
-        $result['forecastLong'] = getForecastLong($longitude, $latitude);
+        $result = array(); 
+        
         $result['current'] = getCurrentWeather($longitude, $latitude);
+        $result['forecastLong'] = getForecastLong($longitude, $latitude);
+        return $result;
     }
 
     function getForecastLong($longitude, $latitude) {
         $resource = '/api/weather/v1/geocode/' . $latitude . '/' . $longitude . '/forecast/daily/10day.json?units=m&language=en-US';
-        $result = json_decode(getData($resource), true);
+        $decodedResponse = json_decode(makeGetRequest($resource), true);
+        $dayPhase = 'day';
+        $nightPhase = 'night';
+        $result = array();
+
+        foreach ($decodedResponse['forecasts'] as $day) {
+            $date = new DateTime($day['fcst_valid_local']);
+            $formattedDate = $date->format('m.d.Y');
+
+            $result[$formattedDate]['weekday'] = $day['dow'];
+            addPhases($day, 'temp', $formattedDate, $result);
+            addPhases($day, 'rh', $formattedDate, $result);
+            addPhases($day, 'clds', $formattedDate, $result);
+            addPhases($day, 'qpf', $formattedDate, $result);
+        }
+        return $result;
+    }
+
+    function addPhases($day, $key, $formattedDate, &$result) {
+        $dayPhase = 'day';
+        $nightPhase = 'night';
+        
+        if (isset($day[$dayPhase])) {
+            $result[$formattedDate][$dayPhase][$key] = $day[$dayPhase][$key];
+        }
+
+        if (isset($day[$nightPhase])) {
+            $result[$formattedDate][$nightPhase][$key] = $day[$nightPhase][$key];
+        }
+    }
+
+    function addValues($hour, $key, $time, &$result) {
+        $result[$time][$key] = $hour[$key];
     }
 
     function getCurrentWeather($longitude, $latitude) {
-        $resource = '/api/weather/v1/geocode/' . $latitude . '/' . $longitude . '/observations.json?units=m&language=en-US';
-        $result = json_decode(getData($resource), true);
+        $resource = '/api/weather/v1/geocode/' . $latitude . '/' . $longitude . '/forecast/hourly/48hour.json?units=m&language=en-US';
+        $decodedResponse = json_decode(makeGetRequest($resource), true);
+        $result = array();
+        $limit = new ArrayIterator($decodedResponse['forecasts']);
+
+        foreach (new LimitIterator($limit, 0,12) as $hour) {
+            $date = new DateTime($hour['fcst_valid_local']);
+            $time = $date->format('H:m');
+
+            addValues($hour, 'temp', $time, $result);
+            addValues($hour, 'clds', $time, $result);
+            addValues($hour, 'qpf', $time, $result);
+            addValues($hour, 'wspd', $time, $result);
+            addValues($hour, 'rh', $time, $result);
+            addValues($hour, 'phrase_32char', $time, $result);
+            addValues($hour, 'mslp', $time, $result);
+
+        }
+        return $result;
     }
 
-    function getData($resource) {
+    function makeGetRequest($resource) {
         global $host;
 
         $headers = array('Accept' => 'application/json');
         $request = Requests::get($host . $resource, $headers, null);
+        //OK
         if ($request->status_code === 200) {
             return $request->body;
+        // NOT FOUND
         } elseif ($request->status_code === 404) {
             return false;
+        //401,403,500, etc. -> fail state
         } else {
             return null;
         }
     }
-
-    function processForecast($data) {
-
-    }
-
-
-
 
 ?>

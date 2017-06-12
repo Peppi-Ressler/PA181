@@ -11,6 +11,7 @@
     if (isset($_POST['city'])) {
         $cityLocation = getCityLocation($_POST['city']);
         $weatherInfo = getWeatherInfoForLocation($cityLocation);
+        //TODO insert to html
     }
 ?>
 
