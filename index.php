@@ -10,7 +10,7 @@
 
     if (isset($_POST['city'])) {
         $cityLocation = getCityLocation($_POST['city']);
-        getForecast48H($cityLocation);
+        $weatherInfo = getWeatherInfoForLocation($cityLocation);
     }
 ?>
 
@@ -32,7 +32,7 @@
                 <input type="text" name="city"><br>
             <input type="submit" value="Submit">  
         <div>
-            <p><?php echo (isset($request->body) ? $request->body : ""); ?></p>
+            <p><?php echo (isset($weatherInfo) ? $weatherInfo : ""); ?></p>
         </div>          
     </body>
 </html>
