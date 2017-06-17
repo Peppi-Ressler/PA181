@@ -10,10 +10,10 @@
     require __DIR__ . '/vendor/autoload.php';
 
     if (isset($_POST['city'])) {
-        //$cityLocation = getCityLocation($_POST['city']);
-        //$weatherInfo = getWeatherInfoForLocation($cityLocation);
-		//print_r(json_encode($weatherInfo));	
-		$weatherInfo = json_decode(file_get_contents("test.json", FILE_USE_INCLUDE_PATH), True);	
+        $cityLocation = getCityLocation($_POST['city']);
+    	$weatherInfo = getWeatherInfoForLocation($cityLocation);
+		#print_r(json_encode($weatherInfo));	
+		#$weatherInfo = json_decode(file_get_contents("test.json", FILE_USE_INCLUDE_PATH), True);	
 		$current = current($weatherInfo['current']);
 		$today = current($weatherInfo['forecastLong']);
         //TODO insert to html
@@ -30,7 +30,7 @@
 
 <body>
 <div style="background-color:black;">
-	<div style="width:75%; margin:0 auto;">
+	<div style="width:80%; margin:0 auto;">
 		<table>
 			<tr>
 				<td>
@@ -58,7 +58,7 @@
 </div>
 
 <!-- toto je druhy pruh location a den v tydnu, uzky -->
-<div id="citySelect" style="color:white; width:75%; margin:0 auto; display:<?php echo (!isset($weatherInfo) ? 'block':'none');?> ">
+<div id="citySelect" style="color:white; width:80%; margin:0 auto; display:<?php echo (!isset($weatherInfo) ? 'block':'none');?> ">
 	<form method="post">
 		Desired location:<br>
 		<input type="text" name="city">
@@ -69,7 +69,7 @@
 <div id="hide" style="display:<?php echo (isset($weatherInfo) ? 'block':'none');?> ">
 	<div style="background-color:#111111; font-size:10pt; color:white; ">
 
-			<table style="width:75%; height:80px; margin:0 auto; font-size: 34px; font-weight:bold;">
+			<table style="width:80%; height:80px; margin:0 auto; font-size: 34px; font-weight:bold;">
 				<tr>
 					<td align="center" width="20%">
 						<?php echo $_POST['city']; ?>
@@ -87,14 +87,14 @@
 
 	<!-- prostredni pruh -->
 	<div style="background-color:black; height:360px;">
-		<table style="width:75%; height:360px; margin:0 auto;" cellspacing="0" cellpadding="0" border="0">
+		<table style="width:80%; height:360px; margin:0 auto;" cellspacing="0" cellpadding="0" border="0">
 			<tr>
 			
 				<td align="left" valign="top" width="20%" style="color:white;">
 					<table style="width:100%; height:350px; font-size: 20px;" cellspacing="0" cellpadding="0" border="0"">
 						<tr><td>Wind</td><td> <?php echo $current[wind]; ?> m/s</td></tr>
-						<tr><td>Humidity</td><td> <?php echo $current[humidity]; ?></td></tr>
-						<tr><td>Precipitation</td><td> <?php echo $current[precipitation]; ?></td></tr>
+						<tr><td>Humidity</td><td> <?php echo $current[humidity]; ?> %</td></tr>
+						<tr><td>Precipitation</td><td> <?php echo $current[precipitation]; ?> mm</td></tr>
 						<tr><td>Air pressure</td><td> <?php echo $current[pressure]; ?></td></tr>
 						<tr><td>Sunrise</td><td> <?php echo $today['sunrise']; ?></td></tr>
 						<tr><td>Sunset</td><td> <?php echo $today['sunset']; ?></td></tr>
@@ -102,9 +102,8 @@
 				</td>
 				<td align="left" valign="top" width="25%" style="color:white;">
 					<table style="width:100%; height:350px; font-size: 28px; font-weight: bold; margin:0 auto;" cellspacing="0" cellpadding="0" border="0">
-						<tr> <td align="center"> <?php echo key($current); ?></td></tr>
 						<tr><td align="center"><img width="65%" src="images/sunny.png"></td></tr>
-						<tr><td align="center"><?php echo $current[temp]; ?> C</td></tr>
+						<tr><td align="center"><?php echo $current[temp]; ?> °C</td></tr>
 					</table>
 									
 					
@@ -124,7 +123,7 @@
 							<?php 
 								foreach($weatherInfo['current'] as $hour => $values) { 
 							?>
-							<td><img width="100%" src="images/sunny.png"><br /><?php echo $values['temp']; ?> C <br /> <?php echo $values['qpf'] ?> mm</td>
+							<td><img width="100%" src="images/sunny.png"><br /><?php echo $values['temp']; ?> °C <br /> <?php echo $values['qpf'] ?> mm</td>
 							<?php 
 								}
 							?>
@@ -138,7 +137,7 @@
 	<!-- GRAAAAAAAAAAAAAAAAAAF -->
 	<div style="background-color:#111111; font-size:10pt; color:white;">
 
-			<table style="width:75%; height:120px; margin:0 auto;">
+			<table style="width:80%; height:120px; margin:0 auto;">
 				<tr>
 					<td>
 						Tady je ten graf, kterej nevim, jak udelat. :D
@@ -157,7 +156,7 @@
 
 	<!-- PREDPOVED NA TYDEN -->
 	<div style="background-color:black; height:350px;">
-		<table style="width:75%; height:350px; margin:0 auto; text-align:center;" cellspacing="2" cellpadding="2" border="0">
+		<table style="width:80%; height:350px; margin:0 auto; text-align:center;" cellspacing="2" cellpadding="2" border="0">
 			<tr>
 				<?php 
 					foreach($weatherInfo['forecastLong'] as $key => $value) {
@@ -165,15 +164,14 @@
 							continue;
 						}	
 				?>
-				<td align="left" valign="center" width="14%" style="color:white;">
+				<td align="left" valign="center" width="10%" style="color:white;">
 					<table style="width:100%; height:340px; text-align:center; font-weight: bold; font-size: 20px;" cellspacing="1" cellpadding="1" border="1"">
 						<tr><td><?php echo $value['weekday']; ?></td></tr>
-						<tr><td><img width="70%" src="images/sunny.png"></td></tr>
-						<tr><td><span style="font-size: 26px;"><?php echo $value['day'][temp]; ?> C / <?php echo $value['night'][temp]; ?> C</span></td></tr>
-					<tr><td align="left" ><span style="font-size: 14px;">Wind: <?php echo $value[day][wind]; ?> </span></td></tr>
-						<tr><td align="left"><span style="font-size: 14px;">Humidity: <?php echo $value[day][humidity]; ?></span></td></tr>
-						<tr><td align="left"><span style="font-size: 14px;">Precipitation: <?php echo $value[day][precipitation]; ?></span></td></tr>
-						<tr><td align="left"><span style="font-size: 14px;">Air pressure: <?php echo $value[day][pressure]; ?></span></td></tr>
+						<tr><td><img width="50%" src="images/sunny.png"></td></tr>
+						<tr><td><span style="font-size: 22px;"><?php echo $value['day'][temp]; ?> °C / <?php echo $value['night'][temp]; ?> °C</span></td></tr>
+						<tr><td align="left" ><span style="font-size: 14px;">Wind: <?php echo $value[day][wind]; ?> m/s</span></td></tr>
+						<tr><td align="left"><span style="font-size: 14px;">Humidity: <?php echo $value[day][humidity]; ?> %</span></td></tr>
+						<tr><td align="left"><span style="font-size: 14px;">Precipitation: <?php echo $value[precipitation]; ?> mm</span></td></tr>
 					</table>
 				</td>
 				<?php 
@@ -182,8 +180,6 @@
 			</tr>
 		</table>
 	</div>
-
-
 	<div class="hr">
 	<hr>
 	</div>

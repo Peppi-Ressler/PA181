@@ -32,8 +32,9 @@
     }
 
     function getForecastLong($longitude, $latitude) {
-        $resource = '/api/weather/v1/geocode/' . $latitude . '/' . $longitude . '/forecast/daily/10day.json?units=m&language=en-US';
+        $resource = '/api/weather/v1/geocode/' . $longitude . '/' . $latitude . '/forecast/daily/7day.json?units=m&language=en-US';
         $decodedResponse = json_decode(makeGetRequest($resource), true);
+        var_dump($decodedResponse);
         $dayPhase = 'day';
         $nightPhase = 'night';
         $result = array();
@@ -43,13 +44,12 @@
             $formattedDate = $date->format('Y-m-d');
 
             $result[$formattedDate]['weekday'] = $day['dow'];
-            $result[$formattedDate]['qpf'] = $day['qpf'];
+            $result[$formattedDate][precipitation] = $day[precipitation];
             $result[$formattedDate]['sunrise'] = date_create_from_format(DATE_ISO8601, $day['sunrise'])->format('H:i');
             $result[$formattedDate]['sunset'] = date_create_from_format(DATE_ISO8601, $day['sunset'])->format('H:i');
-            addPhases($day, 'temp', $formattedDate, $result);
+            addPhases($day, temp, $formattedDate, $result);
             addPhases($day, 'rh', $formattedDate, $result);
-            addPhases($day, 'clds', $formattedDate, $result);
-            addPhases($day, 'qpf', $formattedDate, $result);
+            addPhases($day, wind, $formattedDate, $result);
         }
         return $result;
     }
@@ -72,7 +72,7 @@
     }
 
     function getCurrentWeather($longitude, $latitude) {
-        $resource = '/api/weather/v1/geocode/' . $latitude . '/' . $longitude . '/forecast/hourly/48hour.json?units=m&language=en-US';
+        $resource = '/api/weather/v1/geocode/' . $longitude . '/' . $latitude . '/forecast/hourly/48hour.json?units=m&language=en-US';
         $decodedResponse = json_decode(makeGetRequest($resource), true);
         $result = array();
         $limit = new ArrayIterator($decodedResponse['forecasts']);
