@@ -1,4 +1,12 @@
 <?php
+    define("precipitation", "qpf");
+    define("temp", "temp");
+    define("weekday", "weekday");
+    define("humidity", "rh");
+    define("pressure", "mslp");
+    define("wind", "wspd");
+    define("day", "day");
+    define("night", "night");
     $host = 'https://2829c25d-7bc8-4618-b211-e8ce627254d5:4dfidGfVe1@twcservice.eu-gb.mybluemix.net';
 
     function getCityLocation($city) {
@@ -32,9 +40,12 @@
 
         foreach ($decodedResponse['forecasts'] as $day) {
             $date = new DateTime($day['fcst_valid_local']);
-            $formattedDate = $date->format('m.d.Y');
+            $formattedDate = $date->format('Y-m-d');
 
             $result[$formattedDate]['weekday'] = $day['dow'];
+            $result[$formattedDate]['qpf'] = $day['qpf'];
+            $result[$formattedDate]['sunrise'] = date_create_from_format(DATE_ISO8601, $day['sunrise'])->format('H:i');
+            $result[$formattedDate]['sunset'] = date_create_from_format(DATE_ISO8601, $day['sunset'])->format('H:i');
             addPhases($day, 'temp', $formattedDate, $result);
             addPhases($day, 'rh', $formattedDate, $result);
             addPhases($day, 'clds', $formattedDate, $result);
