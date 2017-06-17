@@ -1,4 +1,5 @@
 <?php
+    // constants
     define("precipitation", "qpf");
     define("temp", "temp");
     define("weekday", "weekday");
@@ -7,6 +8,8 @@
     define("wind", "wspd");
     define("day", "day");
     define("night", "night");
+    define("desc", "phrase_32char");
+
     $host = 'https://2829c25d-7bc8-4618-b211-e8ce627254d5:4dfidGfVe1@twcservice.eu-gb.mybluemix.net';
 
     function getCityLocation($city) {
@@ -31,32 +34,48 @@
         return $result;
     }
 
+    function getIconPath($description) {
+        if (stripos($description, "snow") !== FALSE) {
+            return "snowy.png";
+        } elseif (stripos($description, "storm") !== FALSE) {
+            return "storm.png";
+        } elseif (stripos($description, "rain") !== FALSE || stripos($description, "shower") !== FALSE) {
+            return "rainy.png";
+        } elseif (stripos($description, "sunny") !== FALSE) {
+            return "sunny.png";
+        } elseif (stripos($description, "cloudy") !== FALSE) {
+            return "cloudy.png";
+        } else {
+            return "clouds.png";
+        }
+    }
+
     function getForecastLong($longitude, $latitude) {
         $resource = '/api/weather/v1/geocode/' . $longitude . '/' . $latitude . '/forecast/daily/7day.json?units=m&language=en-US';
         $decodedResponse = json_decode(makeGetRequest($resource), true);
-        var_dump($decodedResponse);
-        $dayPhase = 'day';
-        $nightPhase = 'night';
+        $dayPhase = day;
+        $nightPhase = night;
         $result = array();
 
         foreach ($decodedResponse['forecasts'] as $day) {
             $date = new DateTime($day['fcst_valid_local']);
             $formattedDate = $date->format('Y-m-d');
 
-            $result[$formattedDate]['weekday'] = $day['dow'];
+            $result[$formattedDate][weekday] = $day['dow'];
             $result[$formattedDate][precipitation] = $day[precipitation];
             $result[$formattedDate]['sunrise'] = date_create_from_format(DATE_ISO8601, $day['sunrise'])->format('H:i');
             $result[$formattedDate]['sunset'] = date_create_from_format(DATE_ISO8601, $day['sunset'])->format('H:i');
             addPhases($day, temp, $formattedDate, $result);
-            addPhases($day, 'rh', $formattedDate, $result);
+            addPhases($day, humidity, $formattedDate, $result);
             addPhases($day, wind, $formattedDate, $result);
+            addPhases($day, desc, $formattedDate, $result);
         }
         return $result;
     }
 
     function addPhases($day, $key, $formattedDate, &$result) {
-        $dayPhase = 'day';
-        $nightPhase = 'night';
+        $dayPhase = day;
+        $nightPhase = night;
         
         if (isset($day[$dayPhase])) {
             $result[$formattedDate][$dayPhase][$key] = $day[$dayPhase][$key];
@@ -81,14 +100,12 @@
             $date = new DateTime($hour['fcst_valid_local']);
             $time = $date->format('H:m');
 
-            addValues($hour, 'temp', $time, $result);
-            addValues($hour, 'clds', $time, $result);
-            addValues($hour, 'qpf', $time, $result);
-            addValues($hour, 'wspd', $time, $result);
-            addValues($hour, 'rh', $time, $result);
-            addValues($hour, 'phrase_32char', $time, $result);
-            addValues($hour, 'mslp', $time, $result);
-
+            addValues($hour, temp, $time, $result);
+            addValues($hour, precipitation, $time, $result);
+            addValues($hour, wind, $time, $result);
+            addValues($hour, humidity, $time, $result);
+            addValues($hour, desc, $time, $result);
+            addValues($hour, pressure, $time, $result);
         }
         return $result;
     }
