@@ -3,6 +3,38 @@
 <!--[if IE 7]>         <html lang="en" class="no-js lt-ie9 lt-ie8"> <![endif]-->
 <!--[if IE 8]>         <html lang="en" class="no-js lt-ie9"> <![endif]-->
 <!--[if gt IE 8]><!--> 
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+	<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script type="text/javascript">
+		google.charts.load('current', {'packages':['corechart']});
+      
+		function prepareChart() {
+			google.charts.setOnLoadCallback(drawChart);
+		}
+
+		function drawChart() {
+			var jsonData = $.ajax({
+			url: "index.php",
+			dataType: "json",
+			async: false
+			}).responseText;
+			alert(jsonData);
+			// Create our data table out of JSON data loaded from server.
+			var data = new google.visualization.DataTable(jsonData);
+
+			var options = {
+				legend: {position: 'none'},
+				backgroundColor: '#000000'
+			};
+
+
+
+			// Instantiate and draw our chart, passing in some options.
+			var chart = new google.visualization.LineChart(document.getElementById('chart'));
+			chart.draw(data, options);
+    	}
+    </script>
+
 <?php
     include 'service/weatherService.php';
 	//include 'test.php';
@@ -10,11 +42,17 @@
     require __DIR__ . '/vendor/autoload.php';
 
     if (isset($_POST['city'])) {
-        $cityLocation = getCityLocation($_POST['city']);
-    	$weatherInfo = getWeatherInfoForLocation($cityLocation);
+
+        #$cityLocation = getCityLocation($_POST['city']);
+    	#$weatherInfo = getWeatherInfoForLocation($cityLocation);
 		#print_r(json_encode($weatherInfo));	
-		#$weatherInfo = json_decode(file_get_contents("test.json", FILE_USE_INCLUDE_PATH), True);	
+		$weatherInfo = json_decode(file_get_contents("test.json", FILE_USE_INCLUDE_PATH), True);	
 		$current = current($weatherInfo['current']);
+		session_start();
+		$chartData = $weatherInfo['chart'];
+		$_SESSION['chart'] = $chartData;
+		echo "<script> prepareChart(); </script>";
+
 		$today = current($weatherInfo['forecastLong']);
         //TODO insert to html
     }
@@ -23,6 +61,7 @@
 <html>
 
 <head>
+
 	<title>WEATHER APPLICATION</title>
 	  	<link href='css/styles.css' rel='stylesheet' type='text/css'/>
 		<link rel="favicon" href="images/logo.png" />
@@ -59,7 +98,7 @@ function checkTime(i) {
 					<form method="post">
 						Location
 						<input type="text" name="city" value=<?php echo isset($_POST['city']) ? $_POST['city'] : ""; ?>>
-						<input type="submit" value="Submit" > 
+						<input type="Submit" value="Submit"> 
 					</form>	
 				</td>	
 				<td nowrap="nowrap" align="right">
@@ -148,17 +187,13 @@ function checkTime(i) {
 
 	<!-- GRAAAAAAAAAAAAAAAAAAF -->
 	<div style="background-color:#111111; font-size:10pt; color:white;">
-
 			<table style="width:80%; height:120px; margin:0 auto;">
 				<tr>
 					<td>
-						Tady je ten graf, kterej nevim, jak udelat. :D
+					<div id="chart"></div>
 					</td>
-				
-					
 				</tr>
 			</table>
-
 	</div>
 
 

@@ -31,6 +31,7 @@
         
         $result['current'] = getCurrentWeather($longitude, $latitude);
         $result['forecastLong'] = getForecastLong($longitude, $latitude);
+        $result['chart'] = prepareDataForChart($result['forecastLong']);
         return $result;
     }
 
@@ -48,6 +49,45 @@
         } else {
             return "clouds.png";
         }
+    }
+
+    function prepareDataForChart($data) {
+        $result['cols'] = array(
+            array(
+                "id" => "",
+                "label" => "",
+                "pattern" => "",
+                "type" => "string"
+            ),
+            array(
+                "id" => "",
+                "label" => "",
+                "pattern" => "",
+                "type" => "number"
+            )
+        );
+        $result['rows'] = array();
+
+        foreach($data as $key => $value) {
+            if (!isset($value[day]) || !isset($value[night])) {
+                continue;
+            }
+
+            $result['rows'][] = 
+            array(
+                "c" => array(
+                    array(
+                       "v" => $key,
+                        "f" => null  
+                    ),
+                    array(
+                        "v" => $value[day][temp],
+                        "f" => null
+                    )
+                )
+            );
+        }
+        return json_encode($result);
     }
 
     function getForecastLong($longitude, $latitude) {
