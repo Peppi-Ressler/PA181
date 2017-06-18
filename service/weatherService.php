@@ -15,7 +15,12 @@
     function getCityLocation($city) {
         $headers = array('Accept' => 'application/json');
         $resource = '/api/weather/v3/location/search?query='. $_POST['city'] . '&locationType=city&language=en-US';
-        $decodedJson = json_decode(makeGetRequest($resource), true);
+        $response = makeGetRequest($resource);
+
+        if (!isset($response)) {
+            return NULL;
+        }
+        $decodedJson = json_decode($response, true);
 
         $latitude = $decodedJson['location']['latitude'][0];
         $longitude = $decodedJson['location']['longitude'][0];
